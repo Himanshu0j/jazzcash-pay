@@ -44,14 +44,16 @@ db.exec(`
   );
 `);
 
-// Ensure category column exists in logs
+// Ensure category column exists in logs and trx_id in orders
 try {
   db.exec("ALTER TABLE logs ADD COLUMN category TEXT DEFAULT 'SYSTEM'");
-} catch (e) {
-  // column already exists
-}
+} catch (e) {}
 
-// Seed Default Settings
+try {
+  db.exec("ALTER TABLE orders ADD COLUMN trx_id TEXT");
+} catch (e) {}
+
+// Seed Default Settings (Strict Anti-Scam: auto_approve_seconds = 0)
 const defaultSettings = {
   jazzcash_account: '03001234567',
   jazzcash_title: 'JazzCash Merchant Store',
@@ -64,7 +66,7 @@ const defaultSettings = {
   active_mode: 'dynamic_qr', // 'dynamic_qr' | 'intent' | 'manual'
   aggregator_api_url: '',
   aggregator_api_key: '',
-  auto_approve_seconds: '12', // Auto-verifies dynamic QR transaction in 12s
+  auto_approve_seconds: '0', // 0 = Strict Anti-Scam: requires real proof / admin approval
   preset_amounts: '100,300,500,1000,2000,5000',
   admin_pin: '1234'
 };
@@ -78,6 +80,8 @@ for (const [key, value] of Object.entries(defaultSettings)) {
     setSettingStmt.run(key, value);
   }
 }
+// Enforce anti-scam default
+setSettingStmt.run('auto_approve_seconds', '0');
 
 const DB = {
   // Orders
@@ -117,6 +121,16 @@ const DB = {
       WHERE order_no = ?
     `);
     stmt.run(status, response_message, order_no);
+    return this.getOrderByNo(order_no);
+  },
+
+  submitOrderTrxId(order_no, trx_id) {
+    const stmt = db.prepare(`
+      UPDATE orders
+      SET trx_id = ?, status = 'PROCESSING', response_message = 'TID submitted by customer. Awaiting merchant confirmation.', updated_at = CURRENT_TIMESTAMP
+      WHERE order_no = ?
+    `);
+    stmt.run(trx_id, order_no);
     return this.getOrderByNo(order_no);
   },
 

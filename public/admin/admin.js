@@ -84,6 +84,9 @@ function renderRecentOrders(orders) {
       </td>
       <td style="font-weight: 700;">PKR ${o.amount}</td>
       <td>${o.mobile || '<span style="color: var(--text-muted);">Not entered</span>'}</td>
+      <td>
+        ${o.trx_id ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-family: monospace;">TID: ${o.trx_id}</span>` : '<span style="color: var(--text-muted); font-size: 11px;">None</span>'}
+      </td>
       <td><span class="badge ${getStatusBadgeClass(o.status)}">${o.status}</span></td>
       <td style="font-size: 12px; color: var(--text-muted);">${formatDate(o.created_at)}</td>
       <td>
@@ -115,7 +118,7 @@ async function loadOrders() {
 function renderAllOrders(orders) {
   const tbody = document.getElementById('all-orders-table');
   if (!orders || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No orders found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No orders found</td></tr>';
     return;
   }
 
@@ -129,6 +132,9 @@ function renderAllOrders(orders) {
       </td>
       <td style="font-weight: 700;">PKR ${o.amount}</td>
       <td><strong>${o.mobile || '---'}</strong></td>
+      <td>
+        ${o.trx_id ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-family: monospace;">${o.trx_id}</span>` : '<span style="color: var(--text-muted); font-size: 11px;">Not submitted</span>'}
+      </td>
       <td><span class="badge ${getStatusBadgeClass(o.status)}">${o.status}</span></td>
       <td style="font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
         ${o.response_message || '---'}
@@ -150,7 +156,8 @@ function filterOrdersTable() {
   }
   const filtered = allOrdersCache.filter(o =>
     (o.order_no && o.order_no.toLowerCase().includes(query)) ||
-    (o.mobile && o.mobile.includes(query))
+    (o.mobile && o.mobile.includes(query)) ||
+    (o.trx_id && o.trx_id.toLowerCase().includes(query))
   );
   renderAllOrders(filtered);
 }

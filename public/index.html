@@ -176,33 +176,59 @@
     <button type="button" class="cta" style="background: #475569;" onclick="location.reload()">Try Again</button>
   </section>
 
-  <!-- Processing Modal Overlay -->
+  <!-- Processing & TID Proof Modal Overlay -->
   <div class="overlay-modal" id="process-modal">
     <div class="modal-content">
       <button type="button" class="modal-close-btn" onclick="closeModal()">×</button>
-      <div class="modal-title">Processing Transaction...</div>
-      <div class="modal-urdu">ٹرانزیکشن پروسیس ہو رہی ہے...</div>
+      <div class="modal-title">Payment Verification</div>
+      <div class="modal-urdu">ادائیگی کی تصدیق</div>
 
       <div class="progress-track">
         <div class="progress-bar"></div>
       </div>
 
-      <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-top: 12px;" id="modal-status-text">
-        Check your phone for the MPIN prompt or open the app to approve.
+      <p style="font-size: 13px; color: #475569; line-height: 1.5; margin-top: 8px;" id="modal-status-text">
+        Please complete the payment in your JazzCash/EasyPaisa app.
       </p>
 
-      <div class="status-badge" id="polling-status-badge">
+      <div class="status-badge" id="polling-status-badge" style="margin-bottom: 14px;">
         <span class="pulse-dot"></span>
-        <span id="countdown-label">Waiting for approval (60s)</span>
+        <span id="countdown-label">Awaiting Payment Confirmation</span>
+      </div>
+
+      <!-- TID Input Section for Anti-Scam Proof -->
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 14px; margin-bottom: 12px; text-align: left;">
+        <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">
+          Enter 10-Digit Transaction ID (TID) / ٹرانزیکشن آئی ڈی:
+        </label>
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+          After paying, enter the TID/Trx ID received in SMS or app receipt to verify.
+        </p>
+        <div style="display: flex; gap: 8px;">
+          <input 
+            type="text" 
+            id="modal-tid-input" 
+            placeholder="e.g. 2948102938" 
+            class="input-field" 
+            style="font-size: 14px; padding: 10px 12px; font-family: monospace; font-weight: 600; text-transform: uppercase;"
+          />
+          <button 
+            type="button" 
+            id="modal-tid-submit-btn" 
+            class="btn-action" 
+            style="background: var(--theme-primary); color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;"
+            onclick="submitCustomerTid()"
+          >
+            Verify TID
+          </button>
+        </div>
+        <div id="tid-msg-box" style="font-size: 11px; margin-top: 6px; display: none;"></div>
       </div>
 
       <div class="modal-actions">
         <a id="intent-open-link" href="#" class="open-app-btn">
-          <span id="open-app-text">Open App</span>
+          <span id="open-app-text">Open Mobile App</span>
         </a>
-        <button type="button" class="secondary-action-btn" onclick="closeModal()">
-          I Have Approved on App
-        </button>
       </div>
     </div>
   </div>

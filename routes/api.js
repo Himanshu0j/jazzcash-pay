@@ -228,12 +228,12 @@ router.post('/order/submit', async (req, res) => {
       gatewayResponse
     }, 'INTENT_QR');
 
-    // Auto-approve feature for testing or dynamic QR auto-verify
-    const autoSec = parseInt(settings.auto_approve_seconds || '12', 10);
+    // Auto-approve ONLY if explicitly enabled by admin (> 0)
+    const autoSec = parseInt(settings.auto_approve_seconds || '0', 10);
     if (autoSec > 0) {
       setTimeout(() => {
-        DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved & Deposited to Account (Ref: PK${orderNo.slice(-6)})`);
-        DB.addLog(orderNo, cleanMobile, 'DYNAMIC_QR_AUTO_SUCCESS', 'SUCCESS', { autoApproveSeconds: autoSec }, 'PAYMENT_SUCCESS');
+        DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved (Test Timer: ${autoSec}s)`);
+        DB.addLog(orderNo, cleanMobile, 'AUTO_APPROVE_TIMER', 'SUCCESS', { autoApproveSeconds: autoSec }, 'PAYMENT_SUCCESS');
       }, autoSec * 1000);
     }
 
@@ -263,7 +263,7 @@ router.post('/order/submit', async (req, res) => {
   }
 });
 
-// 3.1 Dynamic QR Scan & Auto-Detection Trigger
+// 3.1 Dynamic QR Scan Handler
 router.post('/order/qr-scan', (req, res) => {
   try {
     const { orderNo } = req.body;
@@ -281,26 +281,24 @@ router.post('/order/qr-scan', (req, res) => {
     }
 
     const settings = DB.getAllSettings();
-    const autoSec = parseInt(settings.auto_approve_seconds || '12', 10);
+    const autoSec = parseInt(settings.auto_approve_seconds || '0', 10);
 
-    // Update to PROCESSING
-    DB.updateOrderStatus(orderNo, 'PROCESSING', 'Dynamic QR scanned by customer. Verifying payment...');
+    // Update to PROCESSING (Awaiting confirmation)
+    DB.updateOrderStatus(orderNo, 'PROCESSING', 'Dynamic QR session opened. Awaiting payment...');
     DB.addLog(orderNo, order.mobile, 'QR_SCANNED_DETECTED', 'INFO', {
       orderNo,
-      amount: order.amount,
-      autoVerifyInSeconds: autoSec
+      amount: order.amount
     }, 'INTENT_QR');
 
-    // Auto verify in autoSec seconds
+    // ONLY auto-verify if admin explicitly enabled test timer
     if (autoSec > 0) {
       setTimeout(() => {
         const current = DB.getOrderByNo(orderNo);
         if (current && current.status === 'PROCESSING') {
-          DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved & Deposited to Account (Ref: PK${orderNo.slice(-6)})`);
-          DB.addLog(orderNo, current.mobile, 'DYNAMIC_QR_AUTO_SUCCESS', 'SUCCESS', {
+          DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved (Test Timer: ${autoSec}s)`);
+          DB.addLog(orderNo, current.mobile, 'AUTO_APPROVE_TIMER', 'SUCCESS', {
             orderNo,
-            amount: current.amount,
-            receiverAccount: current.pay_product_code === 'PAKJAZZCASH' ? settings.jazzcash_account : settings.easypaisa_account
+            amount: current.amount
           }, 'PAYMENT_SUCCESS');
         }
       }, autoSec * 1000);
@@ -308,8 +306,43 @@ router.post('/order/qr-scan', (req, res) => {
 
     res.json({
       code: '000000',
-      message: 'Dynamic QR scan session active',
-      data: { orderNo, status: 'PROCESSING', autoVerifyInSeconds: autoSec }
+      message: 'Dynamic QR session active',
+      data: { orderNo, status: 'PROCESSING' }
+    });
+  } catch (error) {
+    res.status(500).json({ code: 'SERVER_ERROR', message: error.message });
+  }
+});
+
+// 3.2 Customer Submits 10-Digit TID Proof (Anti-Scam Strict Verification)
+router.post('/order/submit-tid', (req, res) => {
+  try {
+    const { orderNo, trxId } = req.body;
+    if (!orderNo || !trxId) {
+      return res.status(400).json({ code: 'MISSING_DATA', message: 'orderNo and trxId are required' });
+    }
+
+    const cleanTid = String(trxId).trim().replace(/[^A-Za-z0-9]/g, '');
+    if (cleanTid.length < 5) {
+      return res.status(400).json({ code: 'INVALID_TID', message: 'Enter a valid Transaction ID (TID) from your JazzCash / EasyPaisa receipt' });
+    }
+
+    const order = DB.getOrderByNo(orderNo);
+    if (!order) {
+      return res.status(404).json({ code: 'ORDER_NOT_FOUND', message: 'Order not found' });
+    }
+
+    DB.submitOrderTrxId(orderNo, cleanTid);
+    DB.addLog(orderNo, order.mobile, 'TID_SUBMITTED_BY_CUSTOMER', 'INFO', {
+      orderNo,
+      trxId: cleanTid,
+      amount: order.amount
+    }, 'INTENT_QR');
+
+    res.json({
+      code: '000000',
+      message: 'Transaction ID submitted. Verifying payment with merchant.',
+      data: { orderNo, trxId: cleanTid, status: 'PROCESSING' }
     });
   } catch (error) {
     res.status(500).json({ code: 'SERVER_ERROR', message: error.message });

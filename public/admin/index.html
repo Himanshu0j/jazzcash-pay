@@ -112,13 +112,14 @@
                 <th>Method</th>
                 <th>Amount</th>
                 <th>Customer Phone</th>
+                <th>Submitted TID</th>
                 <th>Status</th>
                 <th>Date / Time</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="recent-orders-table">
-              <tr><td colspan="7" style="text-align: center;">Loading recent orders...</td></tr>
+              <tr><td colspan="8" style="text-align: center;">Loading recent orders...</td></tr>
             </tbody>
           </table>
         </div>
@@ -131,7 +132,7 @@
         <div class="panel-header">
           <h2 class="panel-title">All Customer Orders</h2>
           <div style="display: flex; gap: 10px;">
-            <input type="text" id="order-search-input" placeholder="Search by Order ID or Mobile..." class="form-input" style="width: 260px;" oninput="filterOrdersTable()" />
+            <input type="text" id="order-search-input" placeholder="Search by Order ID, Mobile, or TID..." class="form-input" style="width: 260px;" oninput="filterOrdersTable()" />
             <button class="btn-primary" onclick="loadOrders()">Refresh</button>
           </div>
         </div>
@@ -143,6 +144,7 @@
                 <th>Method</th>
                 <th>Amount</th>
                 <th>Customer Mobile</th>
+                <th>Submitted TID</th>
                 <th>Status</th>
                 <th>Message / Note</th>
                 <th>Created At</th>
@@ -150,7 +152,7 @@
               </tr>
             </thead>
             <tbody id="all-orders-table">
-              <tr><td colspan="8" style="text-align: center;">Loading orders...</td></tr>
+              <tr><td colspan="9" style="text-align: center;">Loading orders...</td></tr>
             </tbody>
           </table>
         </div>

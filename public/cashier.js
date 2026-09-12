@@ -364,10 +364,57 @@ function startStatusPolling(orderNo) {
   }, 2500);
 }
 
-function updateCountdownBadge() {
-  const label = document.getElementById('countdown-label');
-  if (label) {
-    label.textContent = `Waiting for MPIN / Approval (${countdownSeconds}s)`;
+// Submit Customer TID proof for manual/webhook verification
+async function submitCustomerTid() {
+  if (!currentOrder) return;
+  const tidInput = document.getElementById('modal-tid-input');
+  const msgBox = document.getElementById('tid-msg-box');
+  const btn = document.getElementById('modal-tid-submit-btn');
+
+  const trxId = tidInput.value.trim();
+  if (!trxId || trxId.length < 5) {
+    msgBox.style.display = 'block';
+    msgBox.style.color = '#dc2626';
+    msgBox.textContent = 'Please enter a valid Transaction ID (e.g. 10 digits from your receipt)';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  msgBox.style.display = 'block';
+  msgBox.style.color = '#2563eb';
+  msgBox.textContent = 'Submitting TID for verification...';
+
+  try {
+    const res = await fetch('/api/order/submit-tid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderNo: currentOrder.orderNo,
+        trxId: trxId
+      })
+    });
+
+    const result = await res.json();
+    if (result.code === '000000') {
+      msgBox.style.color = '#16a34a';
+      msgBox.textContent = '✓ TID submitted! Checking payment with merchant account...';
+      const label = document.getElementById('countdown-label');
+      if (label) {
+        label.textContent = 'TID Submitted - Awaiting Merchant Approval';
+      }
+      startStatusPolling(currentOrder.orderNo);
+    } else {
+      msgBox.style.color = '#dc2626';
+      msgBox.textContent = result.message || 'Error verifying TID';
+      btn.disabled = false;
+      btn.textContent = 'Verify TID';
+    }
+  } catch (err) {
+    msgBox.style.color = '#dc2626';
+    msgBox.textContent = 'Network error while verifying TID.';
+    btn.disabled = false;
+    btn.textContent = 'Verify TID';
   }
 }
 
