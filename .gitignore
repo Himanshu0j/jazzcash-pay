@@ -1,0 +1,5 @@
+node_modules/
+cloudflared.exe
+.freebuff/
+.env
+data/

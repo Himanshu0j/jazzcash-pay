@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="jcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cb1f41"/>
+      <stop offset="100%" stop-color="#8a0f27"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="40" fill="url(#jcGrad)"/>
+  <circle cx="100" cy="100" r="68" fill="#ffffff" fill-opacity="0.1"/>
+  <!-- JazzCash 'J' and 'C' styled motif -->
+  <path d="M72 55 H94 V115 C94 130 84 142 66 142 C54 142 44 135 40 126 L56 116 C58 121 62 125 68 125 C75 125 78 120 78 113 Z" fill="#ffffff"/>
+  <path d="M148 76 L134 88 C127 79 119 75 108 75 C91 75 79 88 79 104 C79 120 91 133 108 133 C120 133 129 127 136 117 L150 128 C140 142 126 150 107 150 C79 150 60 130 60 104 C60 78 80 58 108 58 C124 58 138 65 148 76 Z" fill="#ffc836"/>
+  <!-- Small dot -->
+  <circle cx="83" cy="42" r="7" fill="#ffc836"/>
+</svg>

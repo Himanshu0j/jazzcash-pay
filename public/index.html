@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title id="page-title">JazzCash Payment</title>
+  <link rel="icon" id="page-favicon" href="/images/jazzcash-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<main id="main-screen" class="screen theme-jc">
+
+  <!-- Header -->
+  <header class="jc-header">
+    <div class="header-title" id="header-title-text">JazzCash Payment</div>
+    <div class="switch-method-tabs">
+      <button type="button" class="tab-btn active" id="tab-jc" onclick="switchProduct('PAKJAZZCASH')">JazzCash</button>
+      <button type="button" class="tab-btn" id="tab-ep" onclick="switchProduct('PAKEASYPAISA')">EasyPaisa</button>
+    </div>
+  </header>
+
+  <!-- Hero Amount Card -->
+  <div class="hero-wrap">
+    <div class="amount-card">
+      <div class="amount-top">
+        <div class="amount-head">
+          <span class="amount-label-en">Amount payable</span>
+          <span class="amount-label-ur">ادا کی جانے والی رقم</span>
+        </div>
+        <div class="amount-row">
+          <span class="currency-label">PKR</span>
+          <h1 class="amount-value" id="disp-amount">100</h1>
+        </div>
+      </div>
+
+      <div class="amount-meta">
+        <div class="order-title-small">ORDER ID</div>
+        <div class="order-id-row">
+          <span id="disp-order-no">Loading...</span>
+          <button type="button" class="copy-btn" onclick="copyOrderId()" title="Copy Order ID">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <section class="jc-content" id="payment-content-section">
+
+    <!-- Mobile Wallet Form -->
+    <section class="card wallet-form">
+      <div class="card-head">
+        <div class="bilingual-line">
+          <span class="en-title">Wallet account number</span>
+          <span class="ur-title">والیٹ اکاؤنٹ نمبر</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="input-hint-slot">
+          <span class="en">Enter your number here</span>
+          <span class="local">اپنا نمبر یہاں درج کریں</span>
+        </div>
+
+        <div class="input-wrap" id="mobile-wrap">
+          <input 
+            type="tel" 
+            id="mobile-input" 
+            inputmode="numeric" 
+            maxlength="11" 
+            placeholder="03XXXXXXXXX" 
+            class="input-field" 
+            autocomplete="tel"
+          />
+        </div>
+
+        <div class="error-text" id="mobile-error">
+          Enter a valid 11-digit mobile number starting with 03.
+        </div>
+
+        <div class="cta-shell">
+          <button type="button" class="cta" id="submit-btn" disabled onclick="submitPayment()">
+            <span id="btn-text">Pay with JazzCash</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payment Guide Card -->
+    <section class="payment-guide">
+      <img id="guide-logo-img" class="guide-logo" src="/images/jazzcash-logo.svg" alt="Payment Method" />
+      <div class="guide-info">
+        <h2 class="guide-title" id="guide-title-text">Pay with JazzCash</h2>
+        <p class="guide-desc-en" id="guide-desc-en-text">
+          Keep your phone nearby. A payment request or MPIN popup will appear on your phone.
+        </p>
+        <p class="guide-desc-ur" id="guide-desc-ur-text">
+          اپنا فون قریب رکھیں، ادائیگی کی درخواست یا MPIN پرامپٹ آپ کے موبائل پر ظاہر ہوگا
+        </p>
+      </div>
+    </section>
+
+    <!-- Dynamic QR Code Card (Auto-Scan & Auto-Approve) -->
+    <section class="qr-card show" id="direct-qr-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span style="font-weight: 700; font-size: 15px; color: var(--theme-primary);" id="qr-heading">Scan Dynamic QR Code</span>
+        <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 6px; font-weight: 600;">Auto-Approve</span>
+      </div>
+      
+      <p style="font-size: 12px; color: #64748b; margin-top: -4px;">
+        Scan with JazzCash, EasyPaisa, or Raast App. Amount & Order ID are locked in.
+      </p>
+
+      <div style="background: white; padding: 10px; border-radius: 16px; border: 1.5px dashed var(--theme-primary); display: inline-block;">
+        <img id="dynamic-qr-image" class="qr-img" src="" alt="Dynamic Payment QR" style="display: block; width: 200px; height: 200px; margin: 0 auto;" />
+      </div>
+
+      <div class="till-badge" id="qr-amount-badge" style="background: #f8fafc; font-size: 13px;">
+        <span>Locked Amount:</span>
+        <strong id="qr-disp-amount" style="color: var(--theme-primary);">PKR 100</strong>
+      </div>
+
+      <div class="till-badge" id="account-badge" style="font-size: 12px;">
+        <span>Merchant Account:</span>
+        <strong id="disp-account-no">---</strong>
+      </div>
+
+      <a id="qr-deeplink-btn" href="#" class="open-app-btn" style="width: 100%; font-size: 14px; padding: 11px; margin-top: 4px;">
+        📲 Open in Mobile App to Pay
+      </a>
+    </section>
+
+  </section>
+
+  <!-- Success / Completed View -->
+  <section class="result-card" id="success-screen">
+    <div class="success-icon">✓</div>
+    <h2 style="font-size: 22px; font-weight: 700; color: #166534; margin-bottom: 6px;">Payment Successful!</h2>
+    <p style="font-size: 16px; font-weight: 600; color: #166534; direction: rtl; font-family: var(--font-urdu); margin-bottom: 16px;">
+      آپ کی ادائیگی کامیابی سے موصول ہو گئی ہے
+    </p>
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #64748b;">Amount Paid:</span>
+        <strong style="color: #1e293b;" id="success-amount">PKR 100</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #64748b;">Order ID:</span>
+        <strong style="color: #1e293b;" id="success-order-no">---</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: #64748b;">Payer Mobile:</span>
+        <strong style="color: #1e293b;" id="success-mobile">---</strong>
+      </div>
+    </div>
+    <button type="button" class="cta" onclick="location.reload()">Done</button>
+  </section>
+
+  <!-- Failed / Expired View -->
+  <section class="result-card" id="failed-screen">
+    <div class="fail-icon">✕</div>
+    <h2 style="font-size: 22px; font-weight: 700; color: #991b1b; margin-bottom: 6px;">Payment Failed / Timed Out</h2>
+    <p style="font-size: 15px; font-weight: 600; color: #991b1b; direction: rtl; font-family: var(--font-urdu); margin-bottom: 16px;">
+      ادائیگی ناکام ہو گئی ہے یا وقت ختم ہو گیا ہے
+    </p>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+      <p id="failed-reason-text" style="color: #7f1d1d; font-size: 13px; font-weight: 500;">
+        Transaction was cancelled or no MPIN approval was received within the time limit.
+      </p>
+    </div>
+    <button type="button" class="cta" style="background: #475569;" onclick="location.reload()">Try Again</button>
+  </section>
+
+  <!-- Processing Modal Overlay -->
+  <div class="overlay-modal" id="process-modal">
+    <div class="modal-content">
+      <button type="button" class="modal-close-btn" onclick="closeModal()">×</button>
+      <div class="modal-title">Processing Transaction...</div>
+      <div class="modal-urdu">ٹرانزیکشن پروسیس ہو رہی ہے...</div>
+
+      <div class="progress-track">
+        <div class="progress-bar"></div>
+      </div>
+
+      <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-top: 12px;" id="modal-status-text">
+        Check your phone for the MPIN prompt or open the app to approve.
+      </p>
+
+      <div class="status-badge" id="polling-status-badge">
+        <span class="pulse-dot"></span>
+        <span id="countdown-label">Waiting for approval (60s)</span>
+      </div>
+
+      <div class="modal-actions">
+        <a id="intent-open-link" href="#" class="open-app-btn">
+          <span id="open-app-text">Open App</span>
+        </a>
+        <button type="button" class="secondary-action-btn" onclick="closeModal()">
+          I Have Approved on App
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/cashier.js"></script>
+</body>
+</html>

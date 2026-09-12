@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Gateway Admin Panel - JazzCash & EasyPaisa</title>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">PK</div>
+      <div>
+        <div class="brand-name">PayPK Gateway</div>
+        <div class="brand-sub">JazzCash & EasyPaisa</div>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" onclick="showTab('dashboard', this)">
+        <span>📊</span> Dashboard
+      </li>
+      <li class="nav-item" onclick="showTab('orders', this)">
+        <span>📦</span> Orders & Transactions
+      </li>
+      <li class="nav-item" onclick="showTab('logs', this)">
+        <span>📋</span> Response & Error Logs
+      </li>
+      <li class="nav-item" onclick="showTab('settings', this)">
+        <span>⚙️</span> QR & Account Settings
+      </li>
+      <li class="nav-item" onclick="showTab('generator', this)">
+        <span>🧪</span> Payment Link Generator
+      </li>
+    </ul>
+
+    <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border);">
+      <a href="/next" target="_blank" style="display: block; text-align: center; background: rgba(255,255,255,0.06); padding: 10px; border-radius: 8px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600;">
+        Open Customer Cashier ↗
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <div class="top-bar">
+      <div>
+        <h1 class="page-title" id="page-heading">Dashboard</h1>
+        <p style="color: var(--text-muted); font-size: 13px;">Manage payment processing, logs, and gateway controls</p>
+      </div>
+      <div class="live-indicator">
+        <span class="dot-pulse"></span>
+        <span>Gateway Live</span>
+      </div>
+    </div>
+
+    <!-- 1. DASHBOARD TAB -->
+    <section id="tab-dashboard" class="tab-section active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">
+            <span>Total Volume</span>
+            <span>💰</span>
+          </div>
+          <div class="stat-value" id="stat-total-volume">PKR 0</div>
+          <div class="stat-sub" id="stat-total-count">0 total orders</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            <span>Successful Payments</span>
+            <span>✅</span>
+          </div>
+          <div class="stat-value" style="color: var(--success);" id="stat-success-volume">PKR 0</div>
+          <div class="stat-sub" id="stat-success-count">0 approved</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            <span>Pending / Processing</span>
+            <span>⏳</span>
+          </div>
+          <div class="stat-value" style="color: var(--warning);" id="stat-pending-volume">PKR 0</div>
+          <div class="stat-sub" id="stat-pending-count">0 waiting</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            <span>Failed / Rejected</span>
+            <span>❌</span>
+          </div>
+          <div class="stat-value" style="color: var(--danger);" id="stat-failed-count">0</div>
+          <div class="stat-sub">Declined orders</div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Recent Transactions</h2>
+          <button class="btn-action" style="background: var(--border); color: white;" onclick="loadDashboard()">Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Method</th>
+                <th>Amount</th>
+                <th>Customer Phone</th>
+                <th>Status</th>
+                <th>Date / Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recent-orders-table">
+              <tr><td colspan="7" style="text-align: center;">Loading recent orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ALL ORDERS TAB -->
+    <section id="tab-orders" class="tab-section">
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">All Customer Orders</h2>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="order-search-input" placeholder="Search by Order ID or Mobile..." class="form-input" style="width: 260px;" oninput="filterOrdersTable()" />
+            <button class="btn-primary" onclick="loadOrders()">Refresh</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Method</th>
+                <th>Amount</th>
+                <th>Customer Mobile</th>
+                <th>Status</th>
+                <th>Message / Note</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="all-orders-table">
+              <tr><td colspan="8" style="text-align: center;">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. LIVE LOGS & RESPONSES TAB -->
+    <section id="tab-logs" class="tab-section">
+      <div class="card-panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 14px;">
+          <div>
+            <h2 class="panel-title">Separated Transaction & Error Logs</h2>
+            <p style="font-size: 12px; color: var(--text-muted);">Real-time recording categorized by API errors, customer issues, webhooks, and QR events</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action" style="background: var(--border); color: white;" onclick="loadLogs()">Refresh Logs</button>
+          </div>
+        </div>
+
+        <!-- Categorized Filter Pills -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+          <button class="tab-btn active log-filter-btn" data-cat="ALL" onclick="filterLogsCategory('ALL', this)">All Logs (0)</button>
+          <button class="tab-btn log-filter-btn" data-cat="API_BRIDGE_ERROR" style="color: #f87171; border-color: rgba(239,68,68,0.4);" onclick="filterLogsCategory('API_BRIDGE_ERROR', this)">🔴 API & Bank Errors</button>
+          <button class="tab-btn log-filter-btn" data-cat="CUSTOMER_ERROR" style="color: #fbbf24; border-color: rgba(245,158,11,0.4);" onclick="filterLogsCategory('CUSTOMER_ERROR', this)">🟠 Customer / Timeout Issues</button>
+          <button class="tab-btn log-filter-btn" data-cat="MERCHANT_WEBHOOK" style="color: #38bdf8; border-color: rgba(56,189,248,0.4);" onclick="filterLogsCategory('MERCHANT_WEBHOOK', this)">🔵 Merchant IPN / Webhooks</button>
+          <button class="tab-btn log-filter-btn" data-cat="INTENT_QR" style="color: #c084fc; border-color: rgba(192,132,252,0.4);" onclick="filterLogsCategory('INTENT_QR', this)">📱 Dynamic QR & Intent</button>
+          <button class="tab-btn log-filter-btn" data-cat="PAYMENT_SUCCESS" style="color: #4ade80; border-color: rgba(74,222,128,0.4);" onclick="filterLogsCategory('PAYMENT_SUCCESS', this)">🟢 Payment Success</button>
+        </div>
+
+        <div id="logs-container" style="max-height: 600px; overflow-y: auto; padding-right: 6px;">
+          <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading logs...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SETTINGS & QR CODES TAB -->
+    <section id="tab-settings" class="tab-section">
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Gateway Accounts & QR Code Setup</h2>
+          <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
+        </div>
+
+        <!-- Client Setup Guide -->
+        <div style="background: rgba(79, 70, 229, 0.12); border: 1px solid rgba(79, 70, 229, 0.35); border-radius: 14px; padding: 16px 20px; margin-bottom: 24px;">
+          <div style="font-weight: 700; color: #a5b4fc; font-size: 14px; margin-bottom: 6px;">
+            💡 Client Setup Guide (Payment Direct Client Ke Account Me Lene Ka Tareeqa):
+          </div>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+            1. Client apna <strong>JazzCash / EasyPaisa ka Mobile Number aur Account Title</strong> neeche enter kare.<br>
+            2. Apni JazzCash / EasyPaisa mobile app se <strong>QR Code ki picture</strong> download karke yahan upload kare.<br>
+            3. <strong>"Save Changes"</strong> ka button dabayein.<br>
+            4. Cashier par customer ko jo Dynamic QR aur Intent link milega, uske paise <strong>100% DIRECT client ke account</strong> me aayenge!
+          </p>
+        </div>
+
+        <div class="form-grid">
+
+          <!-- JazzCash Settings -->
+          <div style="background: rgba(203, 31, 65, 0.06); border: 1px solid rgba(203, 31, 65, 0.2); border-radius: 14px; padding: 20px;">
+            <h3 style="color: #f43f5e; font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+              <span>🔴</span> JazzCash Merchant Setup
+            </h3>
+
+            <div class="form-group">
+              <label class="form-label">JazzCash Mobile Account Number</label>
+              <input type="text" id="setting-jc-account" class="form-input" placeholder="03001234567" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">JazzCash Account Title / Merchant Name</label>
+              <input type="text" id="setting-jc-title" class="form-input" placeholder="e.g. Lucky Store" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">JazzCash Till ID (Optional)</label>
+              <input type="text" id="setting-jc-till" class="form-input" placeholder="e.g. 00291823" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Upload JazzCash QR Code</label>
+              <input type="file" id="file-jc-qr" class="form-input" accept="image/*" onchange="uploadQR('jazzcash')" />
+              <div class="qr-preview-box" id="preview-jc-box">
+                <span style="color: var(--text-muted); font-size: 12px;">No QR Uploaded</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- EasyPaisa Settings -->
+          <div style="background: rgba(22, 163, 74, 0.06); border: 1px solid rgba(22, 163, 74, 0.2); border-radius: 14px; padding: 20px;">
+            <h3 style="color: #4ade80; font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+              <span>🟢</span> EasyPaisa Merchant Setup
+            </h3>
+
+            <div class="form-group">
+              <label class="form-label">EasyPaisa Mobile Account Number</label>
+              <input type="text" id="setting-ep-account" class="form-input" placeholder="03451234567" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">EasyPaisa Account Title / Merchant Name</label>
+              <input type="text" id="setting-ep-title" class="form-input" placeholder="e.g. Lucky Store" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">EasyPaisa Till ID (Optional)</label>
+              <input type="text" id="setting-ep-till" class="form-input" placeholder="e.g. 00982312" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Upload EasyPaisa QR Code</label>
+              <input type="file" id="file-ep-qr" class="form-input" accept="image/*" onchange="uploadQR('easypaisa')" />
+              <div class="qr-preview-box" id="preview-ep-box">
+                <span style="color: var(--text-muted); font-size: 12px;">No QR Uploaded</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Advanced Engine Settings -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+          <h3 style="font-size: 16px; margin-bottom: 16px;">⚙️ Engine & Gateway Modes</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Active Processing Mode</label>
+              <select id="setting-active-mode" class="form-select">
+                <option value="intent">App Intent & Deeplink Mode (Opens JazzCash / EasyPaisa App)</option>
+                <option value="qr_manual">Manual QR Code & Till Mode (Displays QR code on cashier)</option>
+                <option value="aggregator_bridge">Aggregator / Telecom Bridge API (USSD Push via Webhook)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Auto-Approve for Testing (Seconds)</label>
+              <input type="number" id="setting-auto-approve" class="form-input" placeholder="0 = manual, 10 = auto approve after 10s" />
+              <span style="font-size: 11px; color: var(--text-muted);">Set to 0 in production so payments wait for admin approval.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Preset Amounts (comma-separated)</label>
+              <input type="text" id="setting-preset-amounts" class="form-input" placeholder="100,500,1000,2000,5000" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Aggregator / Bridge Webhook URL (Optional)</label>
+              <input type="text" id="setting-aggregator-url" class="form-input" placeholder="https://your-upstream-gateway/api/charge" />
+            </div>
+        <!-- Optional Official Merchant API Credentials -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+          <h3 style="font-size: 16px; margin-bottom: 16px;">🔑 Official Merchant API Credentials (Optional - Direct USSD Flash Push)</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">JazzCash Merchant ID (pp_MerchantID)</label>
+              <input type="text" id="setting-jc-merchant-id" class="form-input" placeholder="e.g. MC12345" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">JazzCash Merchant Password (pp_Password)</label>
+              <input type="password" id="setting-jc-password" class="form-input" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">EasyPaisa Store ID</label>
+              <input type="text" id="setting-ep-store-id" class="form-input" placeholder="e.g. 123456" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">EasyPaisa Hash Key / Secret</label>
+              <input type="password" id="setting-ep-hash-key" class="form-input" placeholder="••••••••" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. PAYMENT LINK GENERATOR TAB -->
+    <section id="tab-generator" class="tab-section">
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Generate Customer Payment Link</h2>
+        </div>
+
+        <div style="max-width: 600px;">
+          <div class="form-group">
+            <label class="form-label">Amount (PKR)</label>
+            <input type="number" id="gen-amount" class="form-input" value="500" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Channel</label>
+            <select id="gen-channel" class="form-select">
+              <option value="PAKJAZZCASH">JazzCash (PAKJAZZCASH)</option>
+              <option value="PAKEASYPAISA">EasyPaisa (PAKEASYPAISA)</option>
+            </select>
+          </div>
+
+          <button class="btn-primary" onclick="generatePaymentLink()">Generate Link</button>
+
+          <div id="gen-result" style="display: none; margin-top: 20px; background: #090d16; border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Generated Customer URL:</div>
+            <input type="text" id="gen-url-input" class="form-input" readonly style="margin-bottom: 10px;" />
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-action" style="background: var(--primary); color: white;" onclick="copyGeneratedLink()">Copy Link</button>
+              <a id="gen-open-link" href="#" target="_blank" class="btn-action" style="background: var(--border); color: white; text-decoration: none; display: flex; align-items: center;">Test in New Tab ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="/admin/admin.js"></script>
+</body>
+</html>

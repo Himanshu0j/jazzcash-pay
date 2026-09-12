@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="epGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#0e7f3e"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="40" fill="url(#epGrad)"/>
+  <!-- EasyPaisa icon motif -->
+  <circle cx="100" cy="100" r="65" fill="#ffffff" fill-opacity="0.15"/>
+  <!-- Stylized 'e' lowercase -->
+  <path d="M100 52 C73 52 52 73 52 100 C52 127 73 148 100 148 C121 148 138 136 145 118 L126 111 C121 123 111 130 100 130 C84 130 72 118 70 103 H148 C149 101 149 98 149 95 C149 71 128 52 100 52 Z M71 90 C75 77 86 69 100 69 C114 69 125 77 129 90 H71 Z" fill="#ffffff"/>
+  <!-- Leaf accent -->
+  <path d="M130 45 C145 42 155 52 152 68 C136 68 128 56 130 45 Z" fill="#bbf7d0"/>
+</svg>
