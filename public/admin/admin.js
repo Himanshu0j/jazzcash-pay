@@ -257,15 +257,8 @@ async function loadSettings() {
       document.getElementById('setting-ep-title').value = s.easypaisa_title || '';
       document.getElementById('setting-ep-till').value = s.easypaisa_till_id || '';
 
-      document.getElementById('setting-active-mode').value = s.active_mode || 'intent';
-      document.getElementById('setting-auto-approve').value = s.auto_approve_seconds || '0';
+      document.getElementById('setting-auto-approve').value = s.auto_approve_seconds || '12';
       document.getElementById('setting-preset-amounts').value = s.preset_amounts || '';
-      document.getElementById('setting-aggregator-url').value = s.aggregator_api_url || '';
-
-      document.getElementById('setting-jc-merchant-id').value = s.jazzcash_merchant_id || '';
-      document.getElementById('setting-jc-password').value = s.jazzcash_password || '';
-      document.getElementById('setting-ep-store-id').value = s.easypaisa_store_id || '';
-      document.getElementById('setting-ep-hash-key').value = s.easypaisa_hash_key || '';
 
       updateQRPreviews(s.jazzcash_qr_url, s.easypaisa_qr_url);
     }
@@ -301,15 +294,9 @@ async function saveSettings() {
     easypaisa_title: document.getElementById('setting-ep-title').value.trim(),
     easypaisa_till_id: document.getElementById('setting-ep-till').value.trim(),
 
-    active_mode: document.getElementById('setting-active-mode').value,
+    active_mode: 'dynamic_qr',
     auto_approve_seconds: document.getElementById('setting-auto-approve').value,
-    preset_amounts: document.getElementById('setting-preset-amounts').value.trim(),
-    aggregator_api_url: document.getElementById('setting-aggregator-url').value.trim(),
-
-    jazzcash_merchant_id: document.getElementById('setting-jc-merchant-id').value.trim(),
-    jazzcash_password: document.getElementById('setting-jc-password').value.trim(),
-    easypaisa_store_id: document.getElementById('setting-ep-store-id').value.trim(),
-    easypaisa_hash_key: document.getElementById('setting-ep-hash-key').value.trim()
+    preset_amounts: document.getElementById('setting-preset-amounts').value.trim()
   };
 
   try {

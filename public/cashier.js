@@ -153,7 +153,50 @@ function updateMerchantDisplay() {
   if (qrDeeplinkBtn) {
     qrDeeplinkBtn.href = intentUrl;
     qrDeeplinkBtn.textContent = `📲 Open ${isJC ? 'JazzCash' : 'EasyPaisa'} App to Pay`;
+    qrDeeplinkBtn.onclick = (e) => {
+      triggerQrScanSession();
+    };
   }
+
+  // Start background status polling for Dynamic QR scan right from page load
+  if (currentOrder && !pollingTimer) {
+    startBackgroundPolling(currentOrder.orderNo);
+  }
+}
+
+function triggerQrScanSession() {
+  if (!currentOrder) return;
+  openModal();
+  fetch('/api/order/qr-scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderNo: currentOrder.orderNo })
+  }).then(r => r.json()).then(() => {
+    startStatusPolling(currentOrder.orderNo);
+  }).catch(console.error);
+}
+
+function startBackgroundPolling(orderNo) {
+  if (pollingTimer) return;
+  pollingTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/order/status/${orderNo}`);
+      const result = await res.json();
+      if (result.code === '000000' && result.data) {
+        if (result.data.status === 'SUCCESS') {
+          clearInterval(pollingTimer);
+          if (countdownTimer) clearInterval(countdownTimer);
+          closeModal();
+          showSuccessView(result.data);
+        } else if (result.data.status === 'FAILED' || result.data.status === 'REJECTED') {
+          clearInterval(pollingTimer);
+          if (countdownTimer) clearInterval(countdownTimer);
+          closeModal();
+          showFailedView(result.data);
+        }
+      }
+    } catch (e) {}
+  }, 2500);
 }
 
 // Mobile input validation

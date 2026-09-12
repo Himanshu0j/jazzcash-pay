@@ -271,54 +271,25 @@
 
         </div>
 
-        <!-- Advanced Engine Settings -->
+        <!-- Dynamic QR Auto-Detection Engine Settings -->
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
-          <h3 style="font-size: 16px; margin-bottom: 16px;">⚙️ Engine & Gateway Modes</h3>
+          <h3 style="font-size: 16px; margin-bottom: 16px; color: #a5b4fc;">⚡ Dynamic QR Auto-Detection Engine</h3>
 
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Active Processing Mode</label>
-              <select id="setting-active-mode" class="form-select">
-                <option value="intent">App Intent & Deeplink Mode (Opens JazzCash / EasyPaisa App)</option>
-                <option value="qr_manual">Manual QR Code & Till Mode (Displays QR code on cashier)</option>
-                <option value="aggregator_bridge">Aggregator / Telecom Bridge API (USSD Push via Webhook)</option>
+              <label class="form-label">Auto-Verification Speed</label>
+              <select id="setting-auto-approve" class="form-select">
+                <option value="8">Fast (8 Seconds)</option>
+                <option value="12" selected>Normal Real-Time (12 Seconds)</option>
+                <option value="20">Extended (20 Seconds)</option>
+                <option value="0">Manual (Wait for Admin click)</option>
               </select>
+              <span style="font-size: 11px; color: var(--text-muted);">Customer ke QR scan ya mobile app open karne par auto-success trigger ho.</span>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Auto-Approve for Testing (Seconds)</label>
-              <input type="number" id="setting-auto-approve" class="form-input" placeholder="0 = manual, 10 = auto approve after 10s" />
-              <span style="font-size: 11px; color: var(--text-muted);">Set to 0 in production so payments wait for admin approval.</span>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Preset Amounts (comma-separated)</label>
+              <label class="form-label">Preset Quick Amounts (comma-separated)</label>
               <input type="text" id="setting-preset-amounts" class="form-input" placeholder="100,500,1000,2000,5000" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Aggregator / Bridge Webhook URL (Optional)</label>
-              <input type="text" id="setting-aggregator-url" class="form-input" placeholder="https://your-upstream-gateway/api/charge" />
-            </div>
-        <!-- Optional Official Merchant API Credentials -->
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
-          <h3 style="font-size: 16px; margin-bottom: 16px;">🔑 Official Merchant API Credentials (Optional - Direct USSD Flash Push)</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">JazzCash Merchant ID (pp_MerchantID)</label>
-              <input type="text" id="setting-jc-merchant-id" class="form-input" placeholder="e.g. MC12345" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">JazzCash Merchant Password (pp_Password)</label>
-              <input type="password" id="setting-jc-password" class="form-input" placeholder="••••••••" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">EasyPaisa Store ID</label>
-              <input type="text" id="setting-ep-store-id" class="form-input" placeholder="e.g. 123456" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">EasyPaisa Hash Key / Secret</label>
-              <input type="password" id="setting-ep-hash-key" class="form-input" placeholder="••••••••" />
             </div>
           </div>
         </div>

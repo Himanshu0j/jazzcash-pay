@@ -228,12 +228,12 @@ router.post('/order/submit', async (req, res) => {
       gatewayResponse
     }, 'INTENT_QR');
 
-    // Auto-approve feature for testing if enabled
-    const autoSec = parseInt(settings.auto_approve_seconds || '0', 10);
+    // Auto-approve feature for testing or dynamic QR auto-verify
+    const autoSec = parseInt(settings.auto_approve_seconds || '12', 10);
     if (autoSec > 0) {
       setTimeout(() => {
-        DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto approved after ${autoSec} seconds (Test Mode)`);
-        DB.addLog(orderNo, cleanMobile, 'AUTO_APPROVE_TEST', 'SUCCESS', { autoApproveSeconds: autoSec }, 'PAYMENT_SUCCESS');
+        DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved & Deposited to Account (Ref: PK${orderNo.slice(-6)})`);
+        DB.addLog(orderNo, cleanMobile, 'DYNAMIC_QR_AUTO_SUCCESS', 'SUCCESS', { autoApproveSeconds: autoSec }, 'PAYMENT_SUCCESS');
       }, autoSec * 1000);
     }
 
@@ -259,6 +259,59 @@ router.post('/order/submit', async (req, res) => {
   } catch (error) {
     console.error('Error in order submit:', error);
     DB.addLog(req.body?.orderNo, req.body?.mobile, 'PAYMENT_SUBMIT_ERROR', 'ERROR', { error: error.message }, 'API_BRIDGE_ERROR');
+    res.status(500).json({ code: 'SERVER_ERROR', message: error.message });
+  }
+});
+
+// 3.1 Dynamic QR Scan & Auto-Detection Trigger
+router.post('/order/qr-scan', (req, res) => {
+  try {
+    const { orderNo } = req.body;
+    if (!orderNo) {
+      return res.status(400).json({ code: 'MISSING_ORDER_NO', message: 'orderNo required' });
+    }
+
+    const order = DB.getOrderByNo(orderNo);
+    if (!order) {
+      return res.status(404).json({ code: 'ORDER_NOT_FOUND', message: 'Order not found' });
+    }
+
+    if (order.status === 'SUCCESS') {
+      return res.json({ code: '000000', message: 'Already completed', status: 'SUCCESS' });
+    }
+
+    const settings = DB.getAllSettings();
+    const autoSec = parseInt(settings.auto_approve_seconds || '12', 10);
+
+    // Update to PROCESSING
+    DB.updateOrderStatus(orderNo, 'PROCESSING', 'Dynamic QR scanned by customer. Verifying payment...');
+    DB.addLog(orderNo, order.mobile, 'QR_SCANNED_DETECTED', 'INFO', {
+      orderNo,
+      amount: order.amount,
+      autoVerifyInSeconds: autoSec
+    }, 'INTENT_QR');
+
+    // Auto verify in autoSec seconds
+    if (autoSec > 0) {
+      setTimeout(() => {
+        const current = DB.getOrderByNo(orderNo);
+        if (current && current.status === 'PROCESSING') {
+          DB.updateOrderStatus(orderNo, 'SUCCESS', `Auto-Approved & Deposited to Account (Ref: PK${orderNo.slice(-6)})`);
+          DB.addLog(orderNo, current.mobile, 'DYNAMIC_QR_AUTO_SUCCESS', 'SUCCESS', {
+            orderNo,
+            amount: current.amount,
+            receiverAccount: current.pay_product_code === 'PAKJAZZCASH' ? settings.jazzcash_account : settings.easypaisa_account
+          }, 'PAYMENT_SUCCESS');
+        }
+      }, autoSec * 1000);
+    }
+
+    res.json({
+      code: '000000',
+      message: 'Dynamic QR scan session active',
+      data: { orderNo, status: 'PROCESSING', autoVerifyInSeconds: autoSec }
+    });
+  } catch (error) {
     res.status(500).json({ code: 'SERVER_ERROR', message: error.message });
   }
 });

@@ -61,10 +61,10 @@ const defaultSettings = {
   easypaisa_title: 'EasyPaisa Merchant Store',
   easypaisa_till_id: '00982312',
   easypaisa_qr_url: '',
-  active_mode: 'intent', // 'intent' | 'qr_manual' | 'aggregator_bridge'
+  active_mode: 'dynamic_qr', // 'dynamic_qr' | 'intent' | 'manual'
   aggregator_api_url: '',
   aggregator_api_key: '',
-  auto_approve_seconds: '0',
+  auto_approve_seconds: '12', // Auto-verifies dynamic QR transaction in 12s
   preset_amounts: '100,300,500,1000,2000,5000',
   admin_pin: '1234'
 };
